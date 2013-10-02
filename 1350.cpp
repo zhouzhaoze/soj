@@ -41,12 +41,12 @@ int main() {
                 ans -= 1;
             }
         }
-    //    set<int> s;
-    //    for (int i = 1; i <= n; ++i) {
-    //        s.insert(p[i]);
-    //    }
-    //    cout << s.size() << endl;
-        cout << ans << endl;
+        set<int> s;
+        for (int i = 1; i <= n; ++i) {
+            s.insert(find(i));
+        }
+        cout << s.size() << endl;
+    //  cout << ans << endl;
     //  break;
     }
 }            
