@@ -25,29 +25,28 @@ inline int find(int x)
 int main() {
     int n;
     int j;
-	int i;
-	int ito, jto;
+    int i;
+    int ito, jto;
     while(cin >> n) {
         for (i = 1; i <= n; ++i) {
             p[i] = i;
         }
-		int ans = n;
+        int ans = n;
         for (i = 1; i <= n; ++i) {
             cin >> j;
             ito = find(i);
             jto = find(j);
             if (ito != jto) {
-				p[ito] = jto;
-				ans -= 1;
+                p[ito] = jto;
+                ans -= 1;
             }
         }
     //    set<int> s;
     //    for (int i = 1; i <= n; ++i) {
     //        s.insert(p[i]);
-    ////      cout << p[i] << ";";
     //    }
-    ////    cout << s.size() << endl;
-		cout << ans << endl;
+    //    cout << s.size() << endl;
+        cout << ans << endl;
     //  break;
     }
 }            
