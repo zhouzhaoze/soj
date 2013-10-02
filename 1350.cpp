@@ -17,7 +17,7 @@ inline int find(int x)
 {
     if(x!=p[x])
     {
-        p[x]=find(p[x]);//zhe li yao shi num[x]
+        p[x]=find(p[x]);
     }
     return p[x];
 }
