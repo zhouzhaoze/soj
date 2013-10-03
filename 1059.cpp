@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 #include <cstdio>
 #include <cstdlib>
 #include <algorithm>
@@ -14,6 +14,69 @@ struct point {
 	double y;
 };
 
+point operator + (point a, point b) {
+	point r;
+	r.x = a.x + b.x;
+	r.y = a.y + b.y;
+	return r;
+}
+
+point operator - (point a, point b) {
+	point r;
+	r.x = a.x - b.x;
+	r.y = a.y - b.y;
+	return r;
+}
+
+point middle(point a, point b) {
+	point r;
+	r.x = (a.x + b.x) / 2.0;
+	r.y = (a.y + b.y) / 2.0;
+	return r;
+}
+
+const double eps = 1e-6;
+double fix(double x) {
+	if (fabs(x - 0.0) < eps) {
+		return 0;
+	}
+	return x;
+}
+
+point withoutslope(double x, point p1, point p2) {
+	point o;
+	double k = (p1.y-p2.y)/(p1.x-p2.x);
+	double b = p1.y - p1.x * k;
+	o.x = x;
+	o.y = k*x+b;
+	return o;
+}
+
+point withslope(point p1, point p2, point p3, point p4) {
+	point o;double k1=(p1.y-p2.y)/(p1.x-p2.x);
+	double b1=p1.y-p1.x*k1;
+	double k2=(p3.y-p4.y)/(p3.x-p4.x);
+	double b2=p3.y-p3.x*k2;
+	o.x=(b1-b2)/(k2-k1);
+	o.y=k1*o.x+b1;
+	return o;
+
+
+}
+point intersection_point(point a, point b, point a2, point b2) {
+
+	point r;
+	if (fabs(a.x - b.x) < eps) {
+		r = withoutslope(a.x, a2, b2);
+	} else if(fabs(a2.x-b2.x) < eps) {
+		r = withoutslope(a2.x, a, b);
+	} else {
+		r = withslope(a, b, a2, b2);
+	}
+	return r;
+}
+
+
 struct line {
 	double k;
 	double b;
@@ -24,9 +87,11 @@ double sinv(point from, point to) {
 		(from.x * from.x + from.y * from.y);
 }
 
-void rotate(point &from, double angle, point &to) {
+point rotate(point &from, double angle) {
+	point to;
 	to.x = from.x * cos(angle) - from.y * sin(angle);
 	to.y = from.x * sin(angle) + from.y * cos(angle);
+	return to;
 }
 
 double const PI = acos(double(-1));
@@ -42,12 +107,8 @@ int main() {
 			for (int j=0; j < 3; ++j) 				
 				cin >> points[j].x >> points[j].y;
 			
-			point AB;
-			AB.x = points[1].x-points[0].x;
-			AB.y = points[1].y-points[0].y;
-			point AC;
-			AC.x = points[2].x-points[0].x;
-			AC.y = points[2].y-points[0].y;
+			point AB = points[1] - points[0];
+			point AC = points[2] - points[0];
 
 		//	cout << sinv(AB, AC) << endl;
 			if (sinv(AB, AC) > 0) {
@@ -55,103 +116,46 @@ int main() {
 				points[1] = points[2];
 				points[2] = tmp;
 			} 
-			/*for (int i = 0; i < 3; ++i) {
-				cout << points[i].x << ";" << points[i].y << endl;
-			}*/
+
 			point A = points[0];
 			point B = points[1];
 			point C = points[2];
+
 			point AD, DE, D, E;
 			DE = AB;	
-			rotate(DE, PI/2, AD);
-			//D = A + AD;
-			D.x = A.x + AD.x;
-			D.y = A.y + AD.y;
-			E.x = D.x + DE.x;
-			E.y = D.y + DE.y;
+			AD = rotate(AB, PI/2);
+			D = A + AD;
+			E = D + DE;
 			
 			point BJ, JH, J, H;
-			JH.x = points[2].x - points[1].x;
-			JH.y = points[2].y - points[1].y;
-			rotate(JH, PI/2, BJ);
-			J.x = B.x + BJ.x;
-			J.y = B.y + BJ.y;
-			H.x = J.x + JH.x;
-			H.y = J.y + JH.y;
+			JH = C-B;
+			BJ = rotate(JH, PI/2);
+			J = B+BJ;
+			H = J + JH;
 
 			point CF, FG, F, G;
-			FG.x = points[0].x - points[2].x;
-			FG.y = points[0].y - points[2].y;
-			rotate(FG, PI/2, CF);
-			F.x = C.x + CF.x;
-			F.y = C.y + CF.y;
-			G.x = F.x + FG.x;
-			G.y = F.y + FG.y;
+			FG = A - C;
+			CF = rotate(FG, PI/2);
+			F = C + CF;
+			G = F + FG;
 
 			point L, M, N;
-			L.x = (G.x + D.x)/2.0;
-			L.y = (G.y + D.y)/2.0;
-			M.x = (E.x + J.x)/2.0;
-			M.y = (E.y + J.y)/2.0;
-			N.x = (H.x + F.x)/2.0;
-			N.y = (H.y + F.y)/2.0;
+			L = middle(G, D);
+			M = middle(E, J);
+			N = middle(H, F);
 
-			line LA, NC, MB;
-			int flag[3] = {0,0,0};
-			if (A.x - L.x == 0) 
-				flag[1] = 1;
-			else {
-				LA.k = (A.y - L.y) / (A.x - L.x);
-				LA.b = (A.x * L.y - L.x * A.y )/(A.x - L.x);
-			}
-			
-			if (C.x - N.x == 0) 
-				flag[0] = 1; 
-			else {
-				NC.k = (C.y - N.y) / (C.x - N.x);
-				NC.b = (C.x * N.y - N.x * C.y)/(C.x - N.x); 
-			}
-			
-			if (B.x - M.x == 0) 
-				flag[2] = 1;
-			else {
-				MB.k = (B.y - M.y) / (B.x - M.x);
-				MB.b = (B.x * M.y - M.x * B.y)/(B.x - M.x);
-			}
+			point r = intersection_point(L, A, M, B);
 
-			point r;
-
-		/*	cout << LA.k << "->" << LA.b << endl;
-			cout << NC.k << "->" << NC.b << endl;
-			cout << MB.k << "->" << MB.b << endl;
-*/
-			if (flag[2]) {
-				r.x = -(LA.b-NC.b)/(LA.k-NC.k);
-				r.y = LA.k * r.x + LA.b; 
-			//	cout << "@" << endl;
-			} else if (flag[1]) {
-				r.x = -(NC.b-MB.b)/(NC.k-MB.k);
-				r.y = NC.k * r.x + NC.b; 
-			//	cout << "！" << endl;
-			} else {
-				r.x = -(LA.b-MB.b)/(LA.k-MB.k);
-				r.y = LA.k * r.x + LA.b; 
-			//	cout << "）" << endl;
-			}
-
-		//	cout << r.x << "," << r.y << endl;
-			printf("%.4f %.4f\n", r.x, r.y);
-			//r.y = NC.k * r.x + NC.b;
-			//cout << r.x << "," << r.y << endl;
+			printf("%.4f %.4f\n", fix(r.x), fix(r.y));
 			
 		//	cout << "a(" << A.x << "," << A.y << ")" << endl;
 		//	cout << "b(" << B.x << "," << B.y << ")" << endl;
 		//	cout << "c(" << C.x << "," << C.y << ")" << endl;
-		////	cout << "d(" << d.x << "," << d.y << ")" << endl;
-		////	cout << "e(" << e.x << "," << e.y << ")" << endl;
-		////	cout << "f(" << f.x << "," << f.y << ")" << endl;
-		////	cout << "g(" << g.x << "," << g.y << ")" << endl;
-		////	cout << "h(" << h.x << "," << h.y << ")" << endl;
+		//	cout << "d(" << D.x << "," << D.y << ")" << endl;
+		//	cout << "e(" << E.x << "," << E.y << ")" << endl;
+		//	cout << "f(" << F.x << "," << F.y << ")" << endl;
+		//	cout << "g(" << G.x << "," << G.y << ")" << endl;
+		//	cout << "h(" << H.x << "," << H.y << ")" << endl;
 		//////	cout << "(" << i.x << "," << i.y << ")" << endl;
 		////	cout << "j(" << j.x << "," << j.y << ")" << endl;
 		//////	cout << "(" << k.x << "," << k.y << ")" << endl;
