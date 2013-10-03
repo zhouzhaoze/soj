@@ -19,29 +19,6 @@ struct line {
 	double b;
 };
 
-void f(point &p1, point &p2, point& r) {
-	double k = (p1.x-p2.x)/(p2.y-p1.y);
-	double b = 0.5 * ((p1.x + p2.x)*(p2.x-p1.x)/(p2.y-p1.y) + p1.y + p2.y);
-
-	double aa = 1.0 + k * k;
-	double bb = 2 * k * b - 2 * p1.x - 2 * p1.y * k;
-	double cc = p1.x * p1.x + b * b - 2 * p1.y * b + p1.y * p1.y - 2 * 2;
-
-	double delta_root = sqrt(bb * bb - 4 * aa * cc);
-	double x1 = ( -bb + delta_root) / (2*aa);
-	double x2 = ( -bb - delta_root) / (2*aa);
-	double y1 = k * x1 + b;
-	double y2 = k * x2 + b;
-
-	if (x1 >= p1.x && x1 >= p2.x) {
-		r.x = x1;
-		r.y = y1;
-	} else {
-		r.x = x2;
-		r.y = y2;
-	}
-}
-
 double sinv(point from, point to) {
 	return (from.x * to.y - from.y * to.x) / 
 		(from.x * from.x + from.y * from.y);
@@ -123,18 +100,24 @@ int main() {
 			int flag[3] = {0,0,0};
 			if (A.x - L.x == 0) 
 				flag[1] = 1;
-			LA.k = (A.y - L.y) / (A.x - L.x);
-			LA.b = (A.x * L.y - L.x * A.y )/(A.x - L.x);
+			else {
+				LA.k = (A.y - L.y) / (A.x - L.x);
+				LA.b = (A.x * L.y - L.x * A.y )/(A.x - L.x);
+			}
 			
 			if (C.x - N.x == 0) 
-				flag[0] = 1;
-			NC.k = (C.y - N.y) / (C.x - N.x);
-			NC.b = (C.x * N.y - N.x * C.y)/(C.x - N.x);
+				flag[0] = 1; 
+			else {
+				NC.k = (C.y - N.y) / (C.x - N.x);
+				NC.b = (C.x * N.y - N.x * C.y)/(C.x - N.x); 
+			}
 			
 			if (B.x - M.x == 0) 
 				flag[2] = 1;
-			MB.k = (B.y - M.y) / (B.x - M.x);
-			MB.b = (B.x * M.y - M.x * B.y)/(B.x - M.x);
+			else {
+				MB.k = (B.y - M.y) / (B.x - M.x);
+				MB.b = (B.x * M.y - M.x * B.y)/(B.x - M.x);
+			}
 
 			point r;
 
